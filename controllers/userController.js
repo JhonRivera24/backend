@@ -62,7 +62,7 @@ const refreshToken = sign(
   'tu_clave_secreta_aquifhfhfhfffhf',
   {
     algorithm: 'HS256',
-    expiresIn: '5m'
+    expiresIn: '2m'
   }
 );
 
