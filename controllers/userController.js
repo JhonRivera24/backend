@@ -138,6 +138,24 @@ const getSecurityQuestion = async (req, res) => {
   res.json({ question: user.securityQuestion });
 };
 
+const validateSecurityAnswer = async (req, res) => {
+  const { username, answer } = req.body;
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    const isCorrectAnswer = await bcrypt.compare(answer, user.securityAnswer);
+    if (!isCorrectAnswer) return res.status(403).json({ message: 'Respuesta incorrecta' });
+
+    res.json({ message: 'Respuesta correcta' });
+  } catch (err) {
+    console.error('Error al validar respuesta:', err);
+    res.status(500).json({ message: 'Error del servidor', error: err.message });
+  }
+};
+
+
 const resetPassword = async (req, res) => {
   const { username, answer, newPassword } = req.body;
   const user = await User.findOne({ username });
@@ -158,5 +176,6 @@ export default {
   login,
   refreshToken,
   getSecurityQuestion,
-  resetPassword
+  resetPassword,
+  validateSecurityAnswer
 };
