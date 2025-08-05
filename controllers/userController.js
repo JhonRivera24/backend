@@ -156,19 +156,23 @@ const validateSecurityAnswer = async (req, res) => {
 };
 
 
+// Cambiar contraseña (sin validar la respuesta)
 const resetPassword = async (req, res) => {
-  const { username, answer, newPassword } = req.body;
-  const user = await User.findOne({ username });
-  if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+  const { username, newPassword } = req.body;
 
-  const isCorrectAnswer = await bcrypt.compare(answer, user.securityAnswer);
-  if (!isCorrectAnswer) return res.status(403).json({ message: 'Respuesta incorrecta' });
+  try {
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-  user.password = hashedPassword;
-  await user.save();
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
 
-  res.json({ message: 'Contraseña actualizada correctamente' });
+    res.json({ message: 'Contraseña actualizada correctamente' });
+  } catch (err) {
+    console.error('Error al cambiar la contraseña:', err);
+    res.status(500).json({ message: 'Error del servidor', error: err.message });
+  }
 };
 
 export default {
