@@ -155,17 +155,24 @@ const validateSecurityAnswer = async (req, res) => {
   }
 };
 
+
 const resetPassword = async (req, res) => {
-  const { username, answer, newPassword } = req.body;
+  const { username, newPassword, answer } = req.body;
 
   try {
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-    // Validar nuevamente la respuesta secreta antes de cambiar la contraseña
-    const isCorrectAnswer = await bcrypt.compare(answer, user.securityAnswer);
-    if (!isCorrectAnswer) return res.status(403).json({ message: 'Respuesta incorrecta. No se puede cambiar la contraseña.' });
+    // Validar si se proporciona la respuesta secreta
+    if (!answer) return res.status(400).json({ message: 'Se requiere la respuesta de seguridad' });
 
+    // Comparar la respuesta con la que está almacenada en la base de datos
+    const isCorrectAnswer = await bcrypt.compare(answer, user.securityAnswer);
+    if (!isCorrectAnswer) {
+      return res.status(403).json({ message: 'Respuesta incorrecta. No se puede cambiar la contraseña.' });
+    }
+
+    // Si la respuesta es correcta, cambiar la contraseña
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
@@ -176,7 +183,6 @@ const resetPassword = async (req, res) => {
     res.status(500).json({ message: 'Error del servidor', error: err.message });
   }
 };
-
 
 
 export default {
