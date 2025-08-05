@@ -155,14 +155,16 @@ const validateSecurityAnswer = async (req, res) => {
   }
 };
 
-
-// Cambiar contraseña (sin validar la respuesta)
 const resetPassword = async (req, res) => {
-  const { username, newPassword } = req.body;
+  const { username, answer, newPassword } = req.body;
 
   try {
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    // Validar nuevamente la respuesta secreta antes de cambiar la contraseña
+    const isCorrectAnswer = await bcrypt.compare(answer, user.securityAnswer);
+    if (!isCorrectAnswer) return res.status(403).json({ message: 'Respuesta incorrecta. No se puede cambiar la contraseña.' });
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
@@ -174,6 +176,7 @@ const resetPassword = async (req, res) => {
     res.status(500).json({ message: 'Error del servidor', error: err.message });
   }
 };
+
 
 export default {
   register,
