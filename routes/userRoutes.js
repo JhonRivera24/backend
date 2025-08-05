@@ -9,6 +9,6 @@ router.post('/login', userController.login);
 router.post('/get-security-question', userController.getSecurityQuestion);
 router.post('/reset-password', userController.resetPassword);
 router.post("/refresh", userController.refreshToken);
-router.post('/validate-answer', controller.validateSecurityAnswer);
+router.post('/validate-answer', userController.validateSecurityAnswer);
 
 export default router;
